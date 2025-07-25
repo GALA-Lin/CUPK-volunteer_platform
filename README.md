@@ -15,6 +15,12 @@
 
 ## 成员
 
+## 贡献者
+
+<a href="https://github.com/GALA-Lin/WEB-Programing-GROUP-I/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=GALA-Lin/WEB-Programing-GROUP-I" />
+</a>
+
 | 序号 | 学号 | 姓名   | 班级       |
 | :--- | :--- | :----- | :--------- |
 | 37   | XXX  | 胡林森 | 数据23-3班 |
