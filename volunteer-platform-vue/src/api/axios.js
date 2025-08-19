@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/userStore';
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:8080', // 后端API基础地址
+    baseURL: '',
     headers: {
         'Content-Type': 'application/json'
     }
