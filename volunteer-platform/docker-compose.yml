@@ -1,32 +1,32 @@
-# 指定 docker-compose 文件格式的版本
+# 指定 docker-compose 文件格式的版本。'3.8' 是一个常用且功能丰富的版本。
 version: '3.8'
 
-# 定义组成应用的所有服务（容器）
+# 定义组成应用的所有服务（容器）。
 services:
-  # MySQL 服务
+  # 第一个服务的名字，我们叫它 mysql-db。
   mysql-db:
+    # 指定这个服务使用哪个镜像来创建容器。这里我们使用官方的 MySQL 8.0 镜像。
     image: mysql:8.0
+    # 定义重启策略。unless-stopped 表示除非手动停止，否则容器总是在退出后自动重启。
     restart: unless-stopped
+    # 设置容器内的环境变量。这对于配置数据库至关重要。
     environment:
-      MYSQL_ROOT_PASSWORD: root_password_123
-      MYSQL_DATABASE: web_project_db
-      MYSQL_USER: user_123
-      MYSQL_PASSWORD: password_123
+      MYSQL_ROOT_PASSWORD: root_password_123  # 设置 MySQL 的 root 用户密码。
+      MYSQL_DATABASE: web_project_db           # 创建一个名为 volunteer_db 的数据库。
+      MYSQL_USER: user_123                   # 创建一个新用户。
+      MYSQL_PASSWORD: password_123           # 设置新用户的密码。
+    # 设置端口映射，格式是 "主机端口:容器端口"。
+    # 这里将您电脑（主机）的 3306 端口映射到容器的 3306 端口。
+    # 这样，您就可以通过 localhost:3306 连接到容器内的 MySQL 数据库了。
     ports:
       - "3307:3306"
+    # 设置数据卷 (Volume) 挂载。这是为了数据持久化。
+    # 将名为 mysql-data 的数据卷挂载到容器的 /var/lib/mysql 目录。
+    # 这样做可以确保即使容器被删除重建，数据库中的数据（如表和记录）也不会丢失。
     volumes:
       - mysql-data:/var/lib/mysql
 
-  # Redis 服务
-  redis:
-    image: redis:latest
-    restart: unless-stopped
-    # 端口映射，对应命令中的 -p 6379:6379
-    ports:
-      - "6379:6379"
-    # Redis 启动参数，对应命令中的 --requirepass "123456"
-    command: redis-server --requirepass "123456"
-
-# 数据卷定义
+# 在文件的顶层定义数据卷。
 volumes:
+  # 定义一个名为 mysql-data 的数据卷，由 Docker 管理。
   mysql-data:
