@@ -42,7 +42,7 @@ public class AuthController {
 
 
     /**
-     * 用户登录接口 (重构后)
+     * 用户登录接口
      */
     @PostMapping("/login")
     public Result<?> login(@RequestBody UserLoginDTO userLoginDTO) {
