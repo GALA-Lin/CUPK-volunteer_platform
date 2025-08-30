@@ -111,7 +111,7 @@
                 </div>
                 <div class="form-group">
                   <label for="register-password">设置密码</label>
-                  <input type="password" id="register-password" placeholder="至少8位，包含字母和数字" v-model="registerForm.password" />
+                  <input type="password" id="register-password" placeholder="至少8位，包含大小写字母、数字和特殊字符中的至少三种" v-model="registerForm.password" />
                 </div>
                 <div class="form-group">
                   <label for="register-confirm-password">确认密码</label>

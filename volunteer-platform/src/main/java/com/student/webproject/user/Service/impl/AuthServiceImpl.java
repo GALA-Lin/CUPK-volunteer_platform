@@ -23,7 +23,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User register(UserRegisterDTO userRegisterDTO) {
-        // 注册逻辑保持完全不变
+        // 密码规则验证
+        String password = userRegisterDTO.getPassword();
+        validatePassword(password);
+
+        // 原有注册逻辑保持不变
         QueryWrapper<User> usernameWrapper = new QueryWrapper<>();
         usernameWrapper.eq("username", userRegisterDTO.getUsername());
         if (userMapper.selectCount(usernameWrapper) > 0) {
@@ -50,6 +54,48 @@ public class AuthServiceImpl implements AuthService {
         user.setStatus(1);
         userMapper.insert(user);
         return user;
+    }
+
+    /**
+     * 验证密码是否符合规则
+     * 规则：至少8位，包含大小写字母、数字和特殊字符中的至少三种
+     */
+    private void validatePassword(String password) {
+        // 检查密码长度
+        if (password == null || password.length() < 8) {
+            throw new RuntimeException("密码长度不能少于8位");
+        }
+
+        // 定义密码规则的正则表达式
+        // 至少包含大小写字母、数字和特殊字符中的三种
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        boolean hasDigit = false;
+        boolean hasSpecial = false;
+
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                hasUpper = true;
+            } else if (Character.isLowerCase(c)) {
+                hasLower = true;
+            } else if (Character.isDigit(c)) {
+                hasDigit = true;
+            } else {
+                // 特殊字符（非字母数字）
+                hasSpecial = true;
+            }
+        }
+
+        // 统计符合条件的类型数量
+        int count = 0;
+        if (hasUpper) count++;
+        if (hasLower) count++;
+        if (hasDigit) count++;
+        if (hasSpecial) count++;
+
+        if (count < 3) {
+            throw new RuntimeException("密码必须包含大小写字母、数字和特殊字符中的至少三种");
+        }
     }
 
     @Override

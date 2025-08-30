@@ -10,8 +10,8 @@
         <relativePath/> </parent>
 
     <groupId>com.student</groupId>
-    <artifactId>webproject</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>volunteer-platform</artifactId>
+    <version>0.0.2-SNAPSHOT</version>
     <name>volunteer-platform</name>
     <description>Volunteer Platform project for Spring Boot</description>
 

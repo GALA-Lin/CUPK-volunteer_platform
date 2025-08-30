@@ -18,7 +18,7 @@ import java.util.Map;
 public class AdminController {
 
     @Autowired
-    private AuthService authService; // 我们暂时复用之前创建的AuthService
+    private AuthService authService; // 复用之前创建的AuthService
 
     /**
      * 管理员登录接口
@@ -30,6 +30,4 @@ public class AdminController {
         Map<String, String> tokenMap = Collections.singletonMap("token", token);
         return Result.success(tokenMap, "管理员登录成功");
     }
-
-    // 未来所有管理员相关的接口，比如发布活动、删除用户等，都将写在这里。
 }
