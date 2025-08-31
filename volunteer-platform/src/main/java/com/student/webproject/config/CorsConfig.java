@@ -8,6 +8,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.List;
+
 /**
  * 全局跨域配置
  * 通过 CorsFilter 实现，确保在 Spring Security 过滤器链之前执行
@@ -23,10 +25,11 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // 2. 配置允许的来源、方法和头信息
-        // 允许您的前端应用访问 (例如 http://localhost:5173)
-        // 使用 addAllowedOriginPattern("*") 替代 addAllowedOrigin，以支持更灵活的模式
-        config.addAllowedOriginPattern("*");
-
+        // 允许前端应用访问
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://162.14.104.26"
+        ));
         // 允许发送 Cookie
         config.setAllowCredentials(true);
 
@@ -35,10 +38,13 @@ public class CorsConfig {
 
         // 允许所有头信息
         config.addAllowedHeader("*");
+        // 允许允许携带凭证（cookie）
+        config.setAllowCredentials(true);
+        // 预检请求缓存时间（秒）
+        config.setMaxAge(3600L);
 
         // 3. 创建 UrlBasedCorsConfigurationSource 对象
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
         // 4. 为所有接口 ("/**") 应用上述CORS配置
         source.registerCorsConfiguration("/**", config);
 
