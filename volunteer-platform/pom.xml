@@ -6,8 +6,9 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.1</version>
-        <relativePath/> </parent>
+        <version>3.3.2</version> <!-- 升级到修复漏洞的版本 -->
+        <relativePath/>
+    </parent>
 
     <groupId>com.student</groupId>
     <artifactId>volunteer-platform</artifactId>
@@ -17,6 +18,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- 定义安全版本号 -->
+        <commons-compress.version>1.26.0</commons-compress.version>
     </properties>
 
     <dependencyManagement>
@@ -32,6 +35,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- 移除重复的spring-boot-starter-web依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -64,27 +68,31 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.4.0</version>
         </dependency>
+
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>2.0.43</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
@@ -92,13 +100,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- 显式添加修复了CVE-2024-26308的Apache Commons Compress版本 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons-compress.version}</version>
         </dependency>
     </dependencies>
 
@@ -107,11 +117,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>3.3.1</version> <!-- 版本需与你的Spring Boot版本匹配 -->
+                <version>3.3.2</version> <!-- 与Spring Boot版本保持一致 -->
                 <executions>
                     <execution>
                         <goals>
-                            <goal>repackage</goal> <!-- 关键：重新打包为可执行JAR -->
+                            <goal>repackage</goal>
                         </goals>
                     </execution>
                 </executions>
