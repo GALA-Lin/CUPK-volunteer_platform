@@ -25,3 +25,11 @@ export const deleteUser = (id) => {
 export const updateUserPassword = (id, newPassword) => {
     return apiClient.put(`/api/admin/users/${id}/password`, { newPassword });
 };
+/**
+ * 【新增】获取所有用户的简要列表
+ * 这个函数将被 NewsManagement.vue 调用，用于填充发布人下拉框
+ * @returns {Promise<any>}
+ */
+export const getAllUsers = () => {
+    return apiClient.get('/api/admin/users/all');
+};

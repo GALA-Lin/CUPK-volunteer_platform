@@ -26,10 +26,17 @@ public class ServiceRecordAdminController {
     @Autowired
     private ServiceRecordAdminService serviceRecordAdminService;
 
+    /**
+     * 创建服务记录
+     *
+     * @param dto 服务记录创建DTO
+     * @return 包含创建服务记录结果的Result对象
+     */
     @PostMapping
     public Result<ServiceRecord> createServiceRecord(@RequestBody ServiceRecordCreateDTO dto) {
         return serviceRecordAdminService.createServiceRecord(dto);
     }
+
 
     /**
      * 更新服务时长记录的API端点
@@ -66,7 +73,7 @@ public class ServiceRecordAdminController {
      * @param file 上传的文件
      * @param activityId 表单中附带的活动ID
      * @return 处理结果
-     * @throws IOException
+     * @throws IOException 如果文件读取过程中失败
      */
     @PostMapping("/import")
     public Result<String> importFromExcel(@RequestParam("file") MultipartFile file, @RequestParam("activityId") Long activityId) throws IOException {

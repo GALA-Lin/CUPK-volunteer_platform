@@ -26,7 +26,7 @@ const getBreadcrumb = () => {
   // 添加一个固定的“首页”或“看板”面包屑
   const first = matched[0];
   if (!isDashboard(first)) {
-    matched = [{ path: '/admin/activities', meta: { title: '后台管理' }}].concat(matched);
+    matched = [{ path: 'admin/dashboard', meta: { title: '数据看板' }}].concat(matched);
   }
 
   levelList.value = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false);
