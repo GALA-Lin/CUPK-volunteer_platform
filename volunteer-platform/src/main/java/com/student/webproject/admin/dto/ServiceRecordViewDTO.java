@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class ServiceRecordViewDTO {
     private Long id;
     private Long userId;
+    private String studentId; // 新增：学号
     private Long activityId;
     private String realName; // 志愿者真实姓名
     private String activityTitle; // 活动标题

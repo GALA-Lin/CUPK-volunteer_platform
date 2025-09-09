@@ -14,10 +14,6 @@ import java.util.List;
 @Mapper
 public interface AdminActivityMapper extends BaseMapper<Activity> {
 
-    // 目前这里是空的
-    // 通过继承 BaseMapper<Activity>，我们就自动拥有了对 Activity 实体的
-    // 增、删、改、查等一系列常用方法，比如 insert(), deleteById(), updateById(), selectById() 等。
-    // 我们暂时不需要在这里手写任何方法。
     @Select({
             "<script>",
             "SELECT * FROM activities",

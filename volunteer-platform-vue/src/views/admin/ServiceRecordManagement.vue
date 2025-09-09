@@ -14,6 +14,7 @@
       <el-table :data="tableData" v-loading="loading" style="width: 100%">
         <el-table-column prop="id" label="记录ID" width="80" />
         <el-table-column prop="realName" label="志愿者姓名" width="150" />
+        <el-table-column prop="studentId" label="学号" width="150" /> <!-- 新增：显示学号 -->
         <el-table-column prop="activityTitle" label="所属活动" />
         <el-table-column prop="serviceHours" label="服务时长(小时)" width="150" />
         <el-table-column prop="remarks" label="备注" show-overflow-tooltip />
@@ -40,11 +41,15 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" @close="resetForm">
       <el-form ref="recordFormRef" :model="form" :rules="rules" label-width="100px">
+        <!-- 优化：支持用户ID或学号输入，至少填一项 -->
         <el-form-item label="用户ID" prop="userId">
-          <el-input-number v-model="form.userId" :min="1" placeholder="请输入用户ID" style="width: 100%;"/>
+          <el-input-number v-model="form.userId"  placeholder="请输入用户ID（与学号二选一）" style="width: 100%;"/>
+        </el-form-item>
+        <el-form-item label="学生学号" prop="studentId">
+          <el-input v-model="form.studentId" placeholder="请输入学号（与用户ID二选一）" style="width: 100%;"/>
         </el-form-item>
         <el-form-item label="活动ID" prop="activityId">
-          <el-input-number v-model="form.activityId" :min="1" placeholder="请输入活动ID" style="width: 100%;"/>
+          <el-input-number v-model="form.activityId"  placeholder="请输入活动ID" style="width: 100%;"/>
         </el-form-item>
         <el-form-item label="服务时长" prop="serviceHours">
           <el-input-number v-model="form.serviceHours" :precision="2" :step="0.5" :min="0" style="width: 100%;"/>
@@ -135,13 +140,44 @@ const handleDownloadTemplate = async () => {
 // --- 编辑/创建对话框 ---
 const dialogVisible = ref(false);
 const recordFormRef = ref(null);
-const getInitialForm = () => ({ id: null, userId: null, activityId: null, serviceHours: 1.0, remarks: '' });
+const getInitialForm = () => ({
+  id: null,
+  userId: null,
+  studentId: '', // 新增：学号字段
+  activityId: null,
+  serviceHours: 1.0,
+  remarks: ''
+});
 const form = reactive(getInitialForm());
 const rules = {
-  userId: [{ required: true, message: '请输入用户ID', trigger: 'blur' }],
+  userId: [
+    {
+      validator: (rule, value, callback) => {
+        if (!value && !form.studentId) {
+          callback(new Error('用户ID和学号至少填写一项'));
+        } else {
+          callback();
+        }
+      },
+      trigger: ['blur', 'change']
+    }
+  ],
+  studentId: [
+    {
+      validator: (rule, value, callback) => {
+        if (!value && !form.userId) {
+          callback(new Error('用户ID和学号至少填写一项'));
+        } else {
+          callback();
+        }
+      },
+      trigger: ['blur', 'change']
+    }
+  ],
   activityId: [{ required: true, message: '请输入活动ID', trigger: 'blur' }],
   serviceHours: [{ required: true, message: '请输入服务时长', trigger: 'blur' }],
 };
+
 const dialogTitle = computed(() => (form.id ? '编辑时长记录' : '登记新时长'));
 
 // --- 导入功能相关状态 ---
@@ -187,7 +223,7 @@ const handleSubmit = async () => {
   await recordFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        const action = form.id ? updateServiceRecord(form.id, form) : createServiceRecord(form);
+        const action = form.id ? await updateServiceRecord(form.id, form) : await createServiceRecord(form);
         await action;
         ElMessage.success(form.id ? '更新成功' : '创建成功');
         dialogVisible.value = false;
