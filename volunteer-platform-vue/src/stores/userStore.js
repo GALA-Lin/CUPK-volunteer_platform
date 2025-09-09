@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', () => {
             localStorage.setItem('user', JSON.stringify(currentUser.value));
         } catch (error) {
             console.error('获取用户信息失败:', error);
-            logout();
+            await logout();
         }
     }
 
@@ -42,7 +42,7 @@ export const useUserStore = defineStore('user', () => {
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${responseData.token}`;
 
         await fetchCurrentUser();
-        router.push('/profile');
+        await router.push('/profile');
     }
 
     async function updateCurrentUser(profileUpdateDTO) {
@@ -79,7 +79,7 @@ export const useUserStore = defineStore('user', () => {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             delete apiClient.defaults.headers.common['Authorization'];
-            router.push('/login');
+            await router.push('/login');
         }
     }
 

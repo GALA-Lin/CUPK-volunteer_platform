@@ -159,8 +159,8 @@ onMounted(async () => {
     if (!userStore.currentUser) {
       await userStore.fetchCurrentUser();
     }
-    fetchServiceRecords();
-    fetchEnrolledActivities();
+    await fetchServiceRecords();
+    await fetchEnrolledActivities();
   } catch (err) {
     error.value = '无法加载用户信息，请重新登录。';
   }
