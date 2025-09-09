@@ -26,7 +26,9 @@ public class AuthServiceImpl implements AuthService {
         // 密码规则验证
         String password = userRegisterDTO.getPassword();
         validatePassword(password);
-
+        //邮箱验证
+        String email = userRegisterDTO.getEmail();
+        validateEmail(email);
         // 原有注册逻辑保持不变
         QueryWrapper<User> usernameWrapper = new QueryWrapper<>();
         usernameWrapper.eq("username", userRegisterDTO.getUsername());
@@ -54,6 +56,13 @@ public class AuthServiceImpl implements AuthService {
         user.setStatus(1);
         userMapper.insert(user);
         return user;
+    }
+
+    private void validateEmail(String email) {
+        // 邮箱格式验证
+        if (email == null || !email.matches("^\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")) {
+            throw new RuntimeException("邮箱格式不正确");
+        }
     }
 
     /**

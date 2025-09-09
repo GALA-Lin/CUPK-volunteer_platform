@@ -218,7 +218,7 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
             }
              //可以在此添加示例数据，例如：
              Row exampleRow = sheet.createRow(1);
-             exampleRow.createCell(0).setCellValue("202301001");
+             exampleRow.createCell(0).setCellValue("示例");
              exampleRow.createCell(1).setCellValue(2.5);
              exampleRow.createCell(2).setCellValue("活动表现优异");
 
