@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import {defineStore} from 'pinia';
+import {computed, ref} from 'vue';
+import {useRouter} from 'vue-router';
 import apiClient from '@/api/axios.js';
 
 export const useUserStore = defineStore('user', () => {
@@ -47,14 +47,21 @@ export const useUserStore = defineStore('user', () => {
 
     async function updateCurrentUser(profileUpdateDTO) {
         try {
-            const response = await apiClient.put('/api/users/me', profileUpdateDTO);
-            currentUser.value = response.data.data;
+            // 'updatedUser' 变量现在直接是从API的data字段返回的最新用户信息对象
+            // 直接用返回的最新用户信息对象更新 state
+            currentUser.value = await apiClient.put('/api/users/me', profileUpdateDTO);
+
+            // 同步更新 localStorage
             localStorage.setItem('user', JSON.stringify(currentUser.value));
-            alert('信息更新成功！');
+
+            // 建议：移除这里的 alert，让调用方（组件）来负责UI提示，避免重复
+            // alert('信息更新成功！'); // 已在 ProfileView.vue 中使用 ElMessage 处理
+
         } catch (error) {
             console.error('更新用户信息失败:', error);
-            alert('更新失败，请重试。');
-            throw error;
+            // 建议：此处也移除 alert，让 axios 拦截器或调用方统一处理错误提示
+            // alert('更新失败，请重试。');
+            throw error; // 继续抛出错误，让组件的 catch 逻辑可以捕获
         }
     }
 
