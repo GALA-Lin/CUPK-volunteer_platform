@@ -14,7 +14,7 @@
       <el-table :data="tableData" v-loading="loading" style="width: 100%">
         <el-table-column prop="id" label="记录ID" width="80" />
         <el-table-column prop="realName" label="志愿者姓名" width="150" />
-        <el-table-column prop="studentId" label="学号" width="150" /> <!-- 新增：显示学号 -->
+<!--        <el-table-column prop="studentId" label="学号" width="150" /> &lt;!&ndash; 新增：显示学号 &ndash;&gt;-->
         <el-table-column prop="activityTitle" label="所属活动" />
         <el-table-column prop="serviceHours" label="服务时长(小时)" width="150" />
         <el-table-column prop="remarks" label="备注" show-overflow-tooltip />
@@ -43,13 +43,13 @@
       <el-form ref="recordFormRef" :model="form" :rules="rules" label-width="100px">
         <!-- 优化：支持用户ID或学号输入，至少填一项 -->
         <el-form-item label="用户ID" prop="userId">
-          <el-input-number v-model="form.userId"  placeholder="请输入用户ID（与学号二选一）" style="width: 100%;"/>
+          <el-input v-model="form.userId"  placeholder="请输入用户ID（与学号至少一个）" style="width: 100%;"/>
         </el-form-item>
         <el-form-item label="学生学号" prop="studentId">
-          <el-input v-model="form.studentId" placeholder="请输入学号（与用户ID二选一）" style="width: 100%;"/>
+          <el-input v-model="form.studentId" placeholder="请输入学号（与用户ID至少一个）" style="width: 100%;"/>
         </el-form-item>
         <el-form-item label="活动ID" prop="activityId">
-          <el-input-number v-model="form.activityId"  placeholder="请输入活动ID" style="width: 100%;"/>
+          <el-input v-model="form.activityId"  placeholder="请输入活动ID" style="width: 100%;"/>
         </el-form-item>
         <el-form-item label="服务时长" prop="serviceHours">
           <el-input-number v-model="form.serviceHours" :precision="2" :step="0.5" :min="0" style="width: 100%;"/>
@@ -67,7 +67,7 @@
     <el-dialog v-model="importDialogVisible" title="从Excel导入时长" width="500px">
       <el-form label-width="100px">
         <el-form-item label="关联活动ID" required>
-          <el-input-number v-model="importActivityId" :min="1" placeholder="请输入要关联的活动ID" style="width: 100%;"/>
+          <el-input v-model="importActivityId"  placeholder="请输入要关联的活动ID" style="width: 100%;"/>
         </el-form-item>
         <el-form-item label="选择文件" required>
           <el-upload

@@ -149,18 +149,37 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
         }
     }
     /**
-     * 更新时长记录的实现
+     * 更新时长记录的实现（支持userId或studentId）
      */
     @Override
     @Transactional
     public Result<ServiceRecord> updateServiceRecord(Long recordId, ServiceRecordCreateDTO dto) {
-        // 1. 通过 studentId 查用户
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("student_id", dto.getStudentId()));
-        if (user == null) {
-            throw new RuntimeException("操作失败，学号为 " + dto.getStudentId() + " 的用户不存在");
+        // 1. 校验并获取用户（支持 userId 或 studentId）
+        User user = null;
+        if (dto.getUserId() != null) {
+            // 优先通过 userId 查询
+            user = userMapper.selectById(dto.getUserId());
+        } else if (dto.getStudentId() != null && !dto.getStudentId().isEmpty()) {
+            // 若未传 userId，通过 studentId 查询
+            user = userMapper.selectOne(new QueryWrapper<User>().eq("student_id", dto.getStudentId()));
         }
 
-        // 2. 通过 userId 和 activityId 查记录
+        // 校验用户是否存在
+        if (user == null) {
+            String errorMsg = (dto.getUserId() != null)
+                    ? "操作失败，ID为 " + dto.getUserId() + " 的用户不存在"
+                    : "操作失败，学号为 " + dto.getStudentId() + " 的用户不存在";
+            throw new RuntimeException(errorMsg);
+        }
+
+        // 2. 校验 userId 和 studentId 是否冲突（若两者都传，需确保对应同一个用户）
+        if (dto.getUserId() != null && dto.getStudentId() != null && !dto.getStudentId().isEmpty()) {
+            if (!user.getStudentId().equals(dto.getStudentId())) {
+                throw new RuntimeException("操作失败，用户ID与学号不匹配（ID对应的学号为：" + user.getStudentId() + "）");
+            }
+        }
+
+        // 3. 通过 userId 和 activityId 查记录（使用查询到的真实用户ID）
         ServiceRecord oldRecord = serviceRecordMapper.selectOne(
                 new QueryWrapper<ServiceRecord>()
                         .eq("user_id", user.getId())
@@ -170,14 +189,15 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
             throw new RuntimeException("更新失败，该用户在此活动中无时长记录");
         }
 
-        // 3. 计算并更新用户总时长
+        // 4. 计算并更新用户总时长
         BigDecimal newTotalHours = calcTotalHoursAfterDiff(dto, user, oldRecord);
         user.setTotalServiceHours(newTotalHours);
         userMapper.updateById(user);
 
-        // 4. 更新时长记录本身
+        // 5. 更新时长记录本身（强制使用查询到的真实用户ID）
         BeanUtils.copyProperties(dto, oldRecord);
         oldRecord.setId(recordId); // 确保ID不变
+        oldRecord.setUserId(user.getId()); // 覆盖可能传入的错误用户ID
         serviceRecordMapper.updateById(oldRecord);
 
         return Result.success(oldRecord, "时长记录更新成功");
@@ -212,6 +232,18 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
 
         // 2. 查找关联用户
         User user = userMapper.selectById(recordToDelete.getUserId());
+        BigDecimal updatedTotalHours = getBigDecimal(user, recordToDelete);
+
+        user.setTotalServiceHours(updatedTotalHours);
+        userMapper.updateById(user);
+
+        // 4. 删除这条时长记录
+        serviceRecordMapper.deleteById(recordId);
+
+        return Result.success(null, "时长记录删除成功");
+    }
+
+    private static BigDecimal getBigDecimal(User user, ServiceRecord recordToDelete) {
         if (user == null) {
             throw new RuntimeException("数据关联错误，找不到记录对应的用户");
         }
@@ -226,15 +258,9 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
             updatedTotalHours = BigDecimal.ZERO;
             // 可以考虑这里记录日志，提示总时长出现负数的异常情况
         }
-
-        user.setTotalServiceHours(updatedTotalHours);
-        userMapper.updateById(user);
-
-        // 4. 删除这条时长记录
-        serviceRecordMapper.deleteById(recordId);
-
-        return Result.success(null, "时长记录删除成功");
+        return updatedTotalHours;
     }
+
     /**
      * 【新增】获取时长记录列表的实现
      */
