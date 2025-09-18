@@ -170,6 +170,11 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
             throw new RuntimeException("更新失败，该用户在此活动中无时长记录");
         }
 
+        // 3. 计算并更新用户总时长
+        BigDecimal newTotalHours = calcTotalHoursAfterDiff(dto, user, oldRecord);
+        user.setTotalServiceHours(newTotalHours);
+        userMapper.updateById(user);
+
         // 4. 更新时长记录本身
         BeanUtils.copyProperties(dto, oldRecord);
         oldRecord.setId(recordId); // 确保ID不变
@@ -183,12 +188,12 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
             throw new RuntimeException("数据关联错误，找不到记录对应的用户");
         }
 
-        // 2. 计算时长差值
-        BigDecimal oldHours = oldRecord.getServiceHours();
-        BigDecimal newHours = dto.getServiceHours();
+        // 计算时长差值，处理可能的null值
+        BigDecimal oldHours = oldRecord.getServiceHours() == null ? BigDecimal.ZERO : oldRecord.getServiceHours();
+        BigDecimal newHours = dto.getServiceHours() == null ? BigDecimal.ZERO : dto.getServiceHours();
         BigDecimal difference = newHours.subtract(oldHours); // 新时长 - 旧时长
 
-        // 3. 更新用户总时长
+        // 更新用户总时长
         BigDecimal currentTotalHours = user.getTotalServiceHours() == null ? BigDecimal.ZERO : user.getTotalServiceHours();
         return currentTotalHours.add(difference);
     }
@@ -204,19 +209,28 @@ public class ServiceRecordAdminServiceImpl implements ServiceRecordAdminService 
         if (recordToDelete == null) {
             throw new RuntimeException("删除失败，找不到ID为 " + recordId + " 的时长记录");
         }
+
+        // 2. 查找关联用户
         User user = userMapper.selectById(recordToDelete.getUserId());
         if (user == null) {
             throw new RuntimeException("数据关联错误，找不到记录对应的用户");
         }
 
-        // 2. 从用户总时长中减去要删除的时长
-        BigDecimal hoursToDelete = recordToDelete.getServiceHours();
+        // 3. 计算并更新用户总时长（增加空值处理）
+        BigDecimal hoursToDelete = recordToDelete.getServiceHours() == null ? BigDecimal.ZERO : recordToDelete.getServiceHours();
         BigDecimal currentTotalHours = user.getTotalServiceHours() == null ? BigDecimal.ZERO : user.getTotalServiceHours();
+
+        // 确保总时长不会为负数
         BigDecimal updatedTotalHours = currentTotalHours.subtract(hoursToDelete);
+        if (updatedTotalHours.compareTo(BigDecimal.ZERO) < 0) {
+            updatedTotalHours = BigDecimal.ZERO;
+            // 可以考虑这里记录日志，提示总时长出现负数的异常情况
+        }
+
         user.setTotalServiceHours(updatedTotalHours);
         userMapper.updateById(user);
 
-        // 3. 删除这条时长记录
+        // 4. 删除这条时长记录
         serviceRecordMapper.deleteById(recordId);
 
         return Result.success(null, "时长记录删除成功");
