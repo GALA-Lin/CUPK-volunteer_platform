@@ -16,9 +16,24 @@
             <p class="user-role">{{ userStore.currentUser.role }}</p>
           </div>
 
+<!--          <div class="service-hours-display">-->
+<!--            <div class="hours-value">{{ formattedTotalHours }}</div>-->
+<!--            <div class="hours-label">累计志愿时长 (小时)</div>-->
+<!--          </div>-->
           <div class="service-hours-display">
-            <div class="hours-value">{{ formattedTotalHours }}</div>
-            <div class="hours-label">累计志愿时长 (小时)</div>
+            <div class="hours-label">累计志愿时长 (小时)
+              <el-button
+                @click="refreshUserData"
+                size="small"
+                type="primary"
+                :icon="Refresh"
+                circle
+                style="margin-left: 10px"
+                title="刷新数据"
+            ></el-button></div>
+
+            <div class="hours-value">{{ userStore.currentUser.totalServiceHours }}</div>
+
           </div>
 
           <el-form :model="editForm" label-position="top" :disabled="!isEditing">
@@ -26,7 +41,12 @@
               <el-input v-model="editForm.realName" />
             </el-form-item>
             <el-form-item label="学号">
-              <el-input :value="userStore.currentUser.studentId || 'N/A'" disabled />
+              <div
+                  class="fake-input"
+                  @click="showStudentIdAlert"
+              >
+                {{ userStore.currentUser.studentId || 'N/A' }}
+              </div>
             </el-form-item>
             <el-form-item label="邮箱">
               <el-input v-model="editForm.email" />
@@ -97,6 +117,7 @@ import { useUserStore } from '@/stores/userStore.js';
 import { getServiceRecords, getEnrolledActivities } from '@/services/profileApi.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRouter } from "vue-router";
+import {Refresh} from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -115,6 +136,9 @@ const editForm = ref({
   email: '',
   phoneNumber: ''
 });
+const showStudentIdAlert = () => {
+  ElMessage.warning('学号不可修改，如需修改请联系管理员');
+};
 
 watch(() => userStore.currentUser, (newProfile) => {
   if (newProfile) {
@@ -159,12 +183,24 @@ onMounted(async () => {
     if (!userStore.currentUser) {
       await userStore.fetchCurrentUser();
     }
-    fetchServiceRecords();
-    fetchEnrolledActivities();
+    await fetchServiceRecords();
+    await fetchEnrolledActivities();
   } catch (err) {
     error.value = '无法加载用户信息，请重新登录。';
   }
 });
+const refreshUserData = async () => {
+  try {
+    await userStore.fetchCurrentUser();
+    // Refresh both service records and enrolled activities
+    await Promise.all([
+      fetchServiceRecords(),
+      fetchEnrolledActivities()
+    ]);
+  } catch (error) {
+    console.error('Failed to refresh user data:', error);
+  }
+};
 
 const startEditing = () => { isEditing.value = true; };
 
@@ -186,6 +222,7 @@ const handleSave = async () => {
     // store中已处理提示
   }
 };
+
 
 const handleLogout = () => {
   ElMessageBox.confirm('您确定要退出登录吗？', '提示', {
@@ -214,8 +251,20 @@ const getStatusType = (status) => {
   };
   return statusMap[status] || 'info';
 }
+
 </script>
 
 <style scoped>
 .profile-page{min-height:calc(100vh - 120px);padding:40px;background-color:#f4f7f9}.profile-container{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:350px 1fr;gap:30px}.profile-card{background-color:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:30px}.card-title{font-size:24px;text-align:center;color:#333}.card-subtitle{text-align:center;color:#777;margin-bottom:25px}.avatar-section{text-align:center;margin-bottom:20px}.avatar{width:100px;height:100px;border-radius:50%;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:10px}.username{font-size:20px;font-weight:600}.user-role{font-size:14px;color:#999}.service-hours-display{text-align:center;margin:20px 0;padding:15px;background-color:#f0faff;border-radius:8px}.hours-value{font-size:32px;font-weight:700;color:#0056b3}.hours-label{font-size:14px;color:#0056b3}.actions{margin-top:25px;display:flex;justify-content:center;gap:15px}.logout-section{text-align:center;margin-top:25px;padding-top:20px;border-top:1px solid #f0f0f0}.details-tabs{background-color:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:20px 30px}.hours-badge{color:#409eff;font-weight:700}.remarks{color:#909399;font-size:14px;margin-top:8px}.enrolled-list{display:flex;flex-direction:column;gap:15px}.activity-item{display:flex;justify-content:space-between;align-items:center;padding:15px;border:1px solid #e9ecef;border-radius:8px}.activity-title{font-weight:500}.activity-time{font-size:14px;color:#6c757d}
+.fake-input {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  color: #c0c4cc;
+  cursor: not-allowed;
+  font-size: 14px;
+  line-height: 1.5;
+}
 </style>
