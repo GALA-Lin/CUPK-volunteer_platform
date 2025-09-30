@@ -19,6 +19,6 @@ public interface AuthService {
      * @param userLoginDTO 包含用户登录信息的数据传输对象
      * @return 登录成功后生成的 JWT
      */
-    String login(UserLoginDTO userLoginDTO);
+//    String login(UserLoginDTO userLoginDTO);
     String adminLogin(UserLoginDTO userLoginDTO);
 }
