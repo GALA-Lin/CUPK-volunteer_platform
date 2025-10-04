@@ -107,30 +107,30 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    @Override
-    public String login(UserLoginDTO userLoginDTO) {
-        // --- 1. 根据用户名查询用户 ---
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", userLoginDTO.getUsername());
-        User user = userMapper.selectOne(queryWrapper);
-
-        // --- 2. 校验用户是否存在 & 密码是否匹配 ---
-        if (user == null || !passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("用户名或密码错误");
-        }
-
-        // --- 3. 检查账户状态是否正常 ---
-        if (user.getStatus() != 1) {
-            throw new RuntimeException("该账户已被禁用，请联系管理员");
-        }
-
-        // --- 4. 登录成功，生成 JWT ---
-        // 不再手动传递 id 和 username，而是直接传递整个 user 对象
-        // 让 JwtUtils.java 内部去决定需要从 user 对象中提取哪些信息来生成 Token
-
-        // --- 5. 返回 Token ---
-        return jwtUtils.generateToken(user);
-    }
+//    @Override
+//    public String login(UserLoginDTO userLoginDTO) {
+//        // --- 1. 根据用户名查询用户 ---
+//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("username", userLoginDTO.getUsername());
+//        User user = userMapper.selectOne(queryWrapper);
+//
+//        // --- 2. 校验用户是否存在 & 密码是否匹配 ---
+//        if (user == null || !passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
+//            throw new RuntimeException("用户名或密码错误");
+//        }
+//
+//        // --- 3. 检查账户状态是否正常 ---
+//        if (user.getStatus() != 1) {
+//            throw new RuntimeException("该账户已被禁用，请联系管理员");
+//        }
+//
+//        // --- 4. 登录成功，生成 JWT ---
+//        // 不再手动传递 id 和 username，而是直接传递整个 user 对象
+//        // 让 JwtUtils.java 内部去决定需要从 user 对象中提取哪些信息来生成 Token
+//
+//        // --- 5. 返回 Token ---
+//        return jwtUtils.generateToken(user);
+//    }
     @Override
     public String adminLogin(UserLoginDTO userLoginDTO) {
         // --- 1. 根据用户名查询用户 (逻辑与普通登录相同) ---

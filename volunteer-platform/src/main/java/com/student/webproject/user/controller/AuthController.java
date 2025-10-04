@@ -56,8 +56,7 @@ public class AuthController {
 
         // 3. 认证成功，生成JWT
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtUtils.generateTokenByUserDetails(userDetails); // 假设JwtUtils有个新方法
-
+        String token = jwtUtils.generateTokenByUserDetails(userDetails);
         // 4. 封装成功的响应
         Map<String, String> tokenMap = Collections.singletonMap("token", token);
         return Result.success(tokenMap, "登录成功");
