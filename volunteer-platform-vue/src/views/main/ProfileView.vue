@@ -112,12 +112,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import {ref, onMounted, watch, computed, onUnmounted} from 'vue';
 import { useUserStore } from '@/stores/userStore.js';
 import { getServiceRecords, getEnrolledActivities } from '@/services/profileApi.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRouter } from "vue-router";
-import {Refresh} from "@element-plus/icons-vue";
+import { Refresh } from "@element-plus/icons-vue";
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -166,7 +166,35 @@ const fetchServiceRecords = async () => {
     loadingRecords.value = false;
   }
 };
+// Add these to your script setup:
+const isPageVisible = ref(true);
+const refreshInterval = ref(null);
 
+// Auto-refresh when page becomes visible
+const handleVisibilityChange = () => {
+  isPageVisible.value = !document.hidden;
+  if (isPageVisible.value) {
+    refreshUserData();
+  }
+};
+// Set up auto-refresh
+onMounted(() => {
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // Optional: Set up periodic refresh every 5 minutes
+  refreshInterval.value = setInterval(() => {
+    if (isPageVisible.value) {
+      refreshUserData();
+    }
+  }, 5 * 60 * 1000); // 5 minutes
+});
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value);
+  }
+});
 const fetchEnrolledActivities = async () => {
   loadingEnrollments.value = true;
   try {

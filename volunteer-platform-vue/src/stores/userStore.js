@@ -20,7 +20,28 @@ export const useUserStore = defineStore('user', () => {
     // --- Getters (计算属性) ---
     const isLoggedIn = computed(() => !!token.value);
     const isAdmin = computed(() => currentUser.value?.role === 'admin' || currentUser.value?.role === 'super_admin');
-
+    const totalServiceHours = computed(() => {
+        if (!currentUser.value) return '0.00';
+        const hours = currentUser.value.totalServiceHours;
+        return typeof hours === 'number' ? hours.toFixed(2) : parseFloat(hours || 0).toFixed(2);
+    });
+    const refreshCurrentUser = async () => {
+        try {
+            const response = await fetch('/api/user/profile', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                const userData = await response.json();
+                currentUser.value = { ...currentUser.value, ...userData };
+                return userData;
+            }
+        } catch (error) {
+            console.error('Error refreshing user:', error);
+            throw error;
+        }
+    };
     // --- Actions (方法) ---
     async function fetchCurrentUser() {
         if (!token.value) return;
@@ -45,25 +66,46 @@ export const useUserStore = defineStore('user', () => {
         await router.push('/profile');
     }
 
-    async function updateCurrentUser(profileUpdateDTO) {
+    // async function updateCurrentUser(profileUpdateDTO) {
+    //     try {
+    //         // 'updatedUser' 变量现在直接是从API的data字段返回的最新用户信息对象
+    //         // 直接用返回的最新用户信息对象更新 state
+    //         currentUser.value = await apiClient.put('/api/users/me', profileUpdateDTO);
+    //
+    //         // 同步更新 localStorage
+    //         localStorage.setItem('user', JSON.stringify(currentUser.value));
+    //
+    //         // 建议：移除这里的 alert，让调用方（组件）来负责UI提示，避免重复
+    //         // alert('信息更新成功！'); // 已在 ProfileView.vue 中使用 ElMessage 处理
+    //
+    //     } catch (error) {
+    //         console.error('更新用户信息失败:', error);
+    //         // 建议：此处也移除 alert，让 axios 拦截器或调用方统一处理错误提示
+    //         // alert('更新失败，请重试。');
+    //         throw error; // 继续抛出错误，让组件的 catch 逻辑可以捕获
+    //     }
+    // }
+    const updateCurrentUser = async (updateData) => {
         try {
-            // 'updatedUser' 变量现在直接是从API的data字段返回的最新用户信息对象
-            // 直接用返回的最新用户信息对象更新 state
-            currentUser.value = await apiClient.put('/api/users/me', profileUpdateDTO);
+            const response = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(updateData)
+            });
 
-            // 同步更新 localStorage
-            localStorage.setItem('user', JSON.stringify(currentUser.value));
-
-            // 建议：移除这里的 alert，让调用方（组件）来负责UI提示，避免重复
-            // alert('信息更新成功！'); // 已在 ProfileView.vue 中使用 ElMessage 处理
-
+            if (response.ok) {
+                const updatedUser = await response.json();
+                currentUser.value = updatedUser;
+                return updatedUser;
+            }
         } catch (error) {
-            console.error('更新用户信息失败:', error);
-            // 建议：此处也移除 alert，让 axios 拦截器或调用方统一处理错误提示
-            // alert('更新失败，请重试。');
-            throw error; // 继续抛出错误，让组件的 catch 逻辑可以捕获
+            console.error('Error updating user:', error);
+            throw error;
         }
-    }
+    };
 
     async function adminLogin(credentials) {
         const responseData = await apiClient.post('/api/admin/auth/login', credentials);
